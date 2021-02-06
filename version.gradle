@@ -1,0 +1,37 @@
+// Version information
+def versionMajor = 0
+def versionMinor = 1
+def versionPatch = 0
+
+def getGitHash = {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+ext.generateVersionCode = {
+    return 1000000 * versionMajor + 1000 * versionMinor + versionPatch
+}
+
+ext.generateVersionName = {
+    if (project.hasProperty('RELEASE_FLAG') && RELEASE_FLAG == "true") {
+        return "$versionMajor.$versionMinor.$versionPatch"
+    } else {
+        return "$versionMajor.$versionMinor.$versionPatch-${getGitHash()}"
+    }
+}
+
+task printVersionName {
+    doLast {
+        println generateVersionName()
+    }
+}
+
+task printVersionCode {
+    doLast {
+        println generateVersionCode()
+    }
+}
