@@ -10,7 +10,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import pro.borna.androidplayground.R
-import pro.borna.androidplayground.features.login.auth.Auth
+import pro.borna.androidplayground.features.login.auth.Authentication
+import pro.borna.androidplayground.features.login.auth.AuthenticationImpl
 
 
 class LoginActivity : AppCompatActivity(R.layout.layout_login) {
@@ -21,7 +22,7 @@ class LoginActivity : AppCompatActivity(R.layout.layout_login) {
     private lateinit var signInButton: Button
     private lateinit var signInAnonymouslyButton: Button
 
-    private lateinit var auth: Auth
+    private lateinit var authentication: Authentication
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,10 +31,10 @@ class LoginActivity : AppCompatActivity(R.layout.layout_login) {
         signInButton = findViewById(R.id.sign_in_button)
         signInAnonymouslyButton = findViewById(R.id.sign_in_anonymously_button)
 
-        auth = Auth(FirebaseAuth.getInstance())
+        authentication = AuthenticationImpl(FirebaseAuth.getInstance())
 
         GlobalScope.launch {
-            auth.userFlow.collect {
+            authentication.userFlow.collect {
                 Log.d("USER", "$it")
             }
         }
@@ -42,12 +43,12 @@ class LoginActivity : AppCompatActivity(R.layout.layout_login) {
             GlobalScope.launch {
                 val email = emailEditText.text.toString()
                 val password = passwordEditText.text.toString()
-                auth.signIn(email, password)
+                authentication.signIn(email, password)
             }
         }
         signInAnonymouslyButton.setOnClickListener {
             GlobalScope.launch {
-                auth.signIn()
+                authentication.signIn()
             }
         }
     }

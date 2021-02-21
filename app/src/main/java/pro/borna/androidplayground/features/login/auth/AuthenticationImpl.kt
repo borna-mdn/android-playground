@@ -11,15 +11,15 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
-class Auth(
+class AuthenticationImpl(
     private val firebaseAuth: FirebaseAuth
-) {
+) : Authentication {
 
-    val user: User?
+    override val user: User?
         get() = getCurrentUser()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val userFlow: Flow<User?> = callbackFlow {
+    override val userFlow: Flow<User?> = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener {
             sendBlocking(getCurrentUser())
         }
@@ -27,50 +27,50 @@ class Auth(
         awaitClose { firebaseAuth.removeAuthStateListener(listener) }
     }
 
-    suspend fun createUser(email: String, password: String) {
+    override suspend fun createUser(email: String, password: String) {
         return suspendCoroutine { continuation ->
             firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         continuation.resume(Unit)
                     } else {
-                        continuation.resumeWithException(task.exception!!.wrap())
+                        continuation.resumeWithException(task.exception!!)
                     }
                 }
         }
     }
 
-    suspend fun signIn() {
+    override suspend fun signIn() {
         return suspendCoroutine { continuation ->
             firebaseAuth.signInAnonymously()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         continuation.resume(Unit)
                     } else {
-                        continuation.resumeWithException(task.exception!!.wrap())
+                        continuation.resumeWithException(task.exception!!)
                     }
                 }
         }
     }
 
-    suspend fun signIn(email: String, password: String) {
+    override suspend fun signIn(email: String, password: String) {
         return suspendCoroutine { continuation ->
             firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         continuation.resume(Unit)
                     } else {
-                        continuation.resumeWithException(task.exception!!.wrap())
+                        continuation.resumeWithException(task.exception!!)
                     }
                 }
         }
     }
 
-    fun signOut() {
+    override fun signOut() {
         return firebaseAuth.signOut()
     }
 
-    suspend fun deleteUser() {
+    override suspend fun deleteUser() {
         return suspendCoroutine { continuation ->
             val user = firebaseAuth.currentUser
             if (user != null) {
@@ -79,11 +79,11 @@ class Auth(
                         if (task.isSuccessful) {
                             continuation.resume(Unit)
                         } else {
-                            continuation.resumeWithException(task.exception!!.wrap())
+                            continuation.resumeWithException(task.exception!!)
                         }
                     }
             } else {
-                continuation.resumeWithException(InvalidUserException("User is not signed in"))
+                continuation.resumeWithException(Exception("User is not signed in"))
             }
         }
     }
